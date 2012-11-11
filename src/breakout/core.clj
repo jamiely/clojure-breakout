@@ -34,6 +34,16 @@
       (. buffer show))
     (.. Toolkit (getDefaultToolkit) (sync))))
 
+(defn draw-ball [ball #^Graphics g]
+  (let [origin (:origin ball)
+        radius (:radius ball)
+        diameter (* 2 radius)
+        x (- (:x origin) radius)
+        y (- (:y origin) radius)]
+    (doto g
+      (.setColor Color/YELLOW)
+      (.fillOval x y diameter diameter))))
+
 (defn draw-paddle [paddle #^Graphics g]
   (let [origin (:origin paddle)
         x (:x origin)
@@ -51,7 +61,8 @@
       (.setColor Color/RED)
       (.fillRect 0 0 600 400))
     
-    (draw-paddle paddle g)))
+    (draw-paddle paddle g)
+    (draw-ball ball g)))
 
 ;; Updates the location of the paddle
 (defn update-paddle [paddle offset]
@@ -68,6 +79,7 @@
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
         canvas (Canvas.)
+        ball {:origin {:x 300 :y 250} :radius 5}
         paddle {:origin {:x 300 :y 300} :size {:width 50 :height 10}}]
     
     (doto frame
@@ -83,13 +95,14 @@
 
     (loop [score 0
            old-time (System/currentTimeMillis)
-           paddle paddle]
+           paddle paddle
+           ball ball]
       (reset! paddle-offset [0 0])
       (Thread/sleep 10)
       
       (.setTitle frame (str "Breakout: " score))
       (let [blocks (atom nil)
-            ball (atom nil)
+            ball ball
             current-time (System/currentTimeMillis)
             new-time (long (if (> (- current-time old-time) 250)
                              current-time
@@ -102,4 +115,5 @@
         (recur
          (+ score 1)
          new-time
-         updated-paddle)))))
+         updated-paddle
+         ball)))))
