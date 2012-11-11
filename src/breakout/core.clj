@@ -76,10 +76,22 @@
         new-y (+ y delta-y)]
     (assoc paddle :origin {:x new-x :y new-y})))
 
+;; Updates the ball velocity and location
+(defn update-ball [ball]
+  (let [origin (:origin ball)
+        x (:x origin)
+        y (:y origin)
+        velocity (:velocity ball)
+        vx (:x velocity)
+        vy (:y velocity)
+        new-x (+ x vx)
+        new-y (+ y vy)]
+    (assoc ball :origin {:x new-x :y new-y})))
+
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
         canvas (Canvas.)
-        ball {:origin {:x 300 :y 250} :radius 5}
+        ball {:origin {:x 300 :y 250} :radius 5 :velocity {:x 1 :y -1} }
         paddle {:origin {:x 300 :y 300} :size {:width 50 :height 10}}]
     
     (doto frame
@@ -102,18 +114,18 @@
       
       (.setTitle frame (str "Breakout: " score))
       (let [blocks (atom nil)
-            ball ball
             current-time (System/currentTimeMillis)
             new-time (long (if (> (- current-time old-time) 250)
                              current-time
                              old-time))
-            updated-paddle (update-paddle paddle paddle-offset)]
+            updated-paddle (update-paddle paddle paddle-offset)
+            updated-ball (update-ball ball)]
 
-        (draw canvas (draw-game blocks updated-paddle ball score))
+        (draw canvas (draw-game blocks updated-paddle updated-ball score))
 
         :default
         (recur
          (+ score 1)
          new-time
          updated-paddle
-         ball)))))
+         updated-ball)))))
