@@ -35,8 +35,7 @@
     (.. Toolkit (getDefaultToolkit) (sync))))
 
 (defn draw-ball [ball #^Graphics g]
-  (let [origin (:origin ball)
-        radius (:radius ball)
+  (let [{origin :origin, radius :radius} ball
         diameter (* 2 radius)
         x (- (:x origin) radius)
         y (- (:y origin) radius)]
