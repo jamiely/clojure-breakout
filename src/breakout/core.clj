@@ -35,10 +35,11 @@
     (.. Toolkit (getDefaultToolkit) (sync))))
 
 (defn draw-ball [ball #^Graphics g]
-  (let [{origin :origin, radius :radius} ball
+  (let [{{orig-x :x, orig-y :y} :origin, radius :radius} ball
         diameter (* 2 radius)
-        x (- (:x origin) radius)
-        y (- (:y origin) radius)]
+        adjust-radius #(- % radius)
+        x (adjust-radius orig-x)
+        y (adjust-radius orig-y)]
     (doto g
       (.setColor Color/YELLOW)
       (.fillOval x y diameter diameter))))
