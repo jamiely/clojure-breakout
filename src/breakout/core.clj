@@ -17,16 +17,29 @@
       (. buffer show))
     (.. Toolkit (getDefaultToolkit) (sync))))
 
+(defn draw-paddle [paddle #^Graphics g]
+  (let [origin (:origin paddle)
+        x (:x origin)
+        y (:y origin)
+        size (:size paddle)
+        width (:width size)
+        height (:height size)]
+    (doto g
+      (.setColor Color/GREEN)
+      (.fillRect x y width height))))
+
 (defn draw-game [blocks paddle ball score]
   (fn [#^Graphics g]
     (doto g
       (.setColor Color/RED)
-      (.fillRect 0 0 600 400)
-    )))
+      (.fillRect 0 0 600 400))
+    
+    (draw-paddle paddle g)))
 
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
-        canvas (Canvas.)]
+        canvas (Canvas.)
+        paddle {:origin {:x 300 :y 300} :size {:width 50 :height 10}}]
     
     (doto frame
       (.setSize 600 400)
@@ -39,11 +52,11 @@
       (.requestFocus))
 
     (loop [score 0
-           old-time (System/currentTimeMillis)]
+           old-time (System/currentTimeMillis)
+           paddle paddle]
       (Thread/sleep 10)
       (.setTitle frame (str "Breakout: " score))
       (let [blocks (atom nil)
-            paddle (atom nil)
             ball (atom nil)
             current-time (System/currentTimeMillis)
             new-time (long (if (> (- current-time old-time) 250)
@@ -55,4 +68,5 @@
         :default
         (recur
          (+ score 1)
-         new-time)))))
+         new-time
+         paddle)))))
