@@ -40,29 +40,48 @@
       (.setColor Color/YELLOW)
       (.fillOval x y diameter diameter))))
 
-(defn draw-paddle [paddle #^Graphics g]
-  (let [origin (:origin paddle)
+(defn get-color [color]
+  (case color
+    :green Color/GREEN
+    :red Color/RED
+    :magenta Color/MAGENTA
+    :yellow Color/YELLOW
+    :black Color/BLACK
+    :orange Color/ORANGE
+    :blue Color/BLUE))
+
+(defn draw-rect [rect #^Graphics g]
+  (let [origin (:origin rect)
         x (:x origin)
         y (:y origin)
-        size (:size paddle)
+        size (:size rect)
         width (:width size)
-        height (:height size)]
+        height (:height size)
+        color (:color rect)]
     (doto g
-      (.setColor Color/GREEN)
+      (.setColor (get-color color))
       (.fillRect x y width height))))
+
+(defn draw-paddle [paddle #^Graphics g]
+  (draw-rect paddle g))
+
+(defn draw-block [block #^Graphics g]
+  (draw-rect block g))
 
 (defn draw-game [blocks paddle ball score]
   (fn [#^Graphics g]
     (doto g
       (.setColor Color/RED)
       (.fillRect 0 0 600 400))
-    
+
+    (map #(draw-block % g) blocks)
     (draw-paddle paddle g)
     (draw-ball ball g)))
 
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
         canvas (Canvas.)
+        blocks (default-blocks)
         ball (default-ball)
         paddle (default-paddle)]
     
@@ -79,17 +98,18 @@
 
     (loop [score 0
            old-time (System/currentTimeMillis)
+           blocks blocks
            paddle paddle
            ball ball]
       (reset! paddle-offset [0 0])
       (Thread/sleep 10)
       
       (.setTitle frame (str "Breakout: " score))
-      (let [blocks (atom nil)
-            current-time (System/currentTimeMillis)
+      (let [current-time (System/currentTimeMillis)
             new-time (long (if (> (- current-time old-time) 250)
                              current-time
                              old-time))
+            updated-blocks (update-blocks blocks ball)
             updated-paddle (update-paddle paddle paddle-offset)
             updated-ball (update-ball ball paddle)]
 
@@ -99,5 +119,6 @@
         (recur
          (+ score 1)
          new-time
+         updated-blocks
          updated-paddle
          updated-ball)))))

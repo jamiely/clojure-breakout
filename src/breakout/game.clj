@@ -10,10 +10,21 @@
 ;; Ball settings
 (def ball-speed 5)
 
+(def block-size (atom {:width 50 :height 20}))
+
 (defn default-ball []
   {:origin {:x 300 :y 250} :radius 5 :velocity {:x ball-speed :y (- ball-speed)} })
 (defn default-paddle []
-  {:origin {:x 300 :y 300} :size {:width 50 :height 10}})
+  {:origin {:x 300 :y 300} :size {:width 50 :height 10} :color :green})
+
+(defn default-blocks []
+  (let [{width :width, height :height, :as size} @block-size
+        colors [:yellow :green :blue :magenta :red :orange]]
+    (for [x (range 1 5)
+          y (range 1 5)]
+      {:orientation {:x (* x width) :y (* y height)}
+       :size size
+       :color (nth colors (mod x (count colors)))})))
 
 ;; Updates the location of the paddle
 (defn update-paddle [paddle offset]
@@ -137,6 +148,9 @@
       (assoc ball :velocity new-velocity)
       :origin
       new-origin)))
+
+(defn update-blocks [blocks ball]
+  blocks)
 
 ;; Updates the ball velocity and location
 (defn update-ball [ball paddle]
