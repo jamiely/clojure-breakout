@@ -133,26 +133,30 @@
 ;; (y - b) / m = x
 
 (defn paddle-ball-collision? [paddle ball]
-  (let [{{paddle-y :y, paddle-x :x} :origin, {paddle-width :width, paddle-height :height} :size} paddle
-        {{ball-x :x, ball-y :y} :origin, {ball-vx :x, ball-vy :y} :velocity} ball
-        ;; give some padding around the paddle so we dont have the ball seeming to pass
-        ;; through corners of the paddle
-        collision-give-x 2
-        m (/ ball-vy ball-vx)
-        b (- ball-y (* m ball-x))
+  (let [{{paddle-y :y, paddle-x :x} :origin,
+         {paddle-width :width, paddle-height :height} :size} paddle
+        {{ball-x :x, ball-y :y} :origin,
+         {ball-vx :x, ball-vy :y} :velocity} ball
         ball-next-y (+ ball-y ball-vy)
-        ;; this is the x position of the ball if it was at the y position of the paddle
-        ball-future-x (/ (- paddle-y b) m)
+        within-y? (and (<= ball-y paddle-y) (>= ball-next-y paddle-y))]
+    (if (not within-y?)
+      ;; we can stop right here since the ball won't collide with something
+      ;; not between its y delta
+      false
+      
+      ;; compute the x coordinate where the ball will cross the paddle's path
+      (let [collision-give-x 2 ; some padding so the ball doesn't blow through a paddle corner
+            m (/ ball-vy ball-vx)
+            b (- ball-y (* m ball-x))
+            ;; this is the x position of the ball if it was at the y position of the paddle
+            ball-future-x (/ (- paddle-y b) m)
 
-        paddle-x-min (- paddle-x collision-give-x)
-        paddle-x-max (+ paddle-x paddle-width collision-give-x)
+            paddle-x-min (- paddle-x collision-give-x)
+            paddle-x-max (+ paddle-x paddle-width collision-give-x)
+                       
+            within-x? (and (>= ball-future-x paddle-x-min) (<= ball-future-x paddle-x-max))]
         
-        within-y? (and (<= ball-y paddle-y) (>= ball-next-y paddle-y))
-        within-x? (and (>= ball-future-x paddle-x-min) (<= ball-future-x paddle-x-max))
-
-        collision? (and within-y? within-x?)]
-    
-    collision?))
+        within-x?))))
 
 (defn paddle-collision-adjust-ball [paddle ball]
   (println (str "The ball collided with the paddle:\npaddle=" paddle " ball=" ball))
