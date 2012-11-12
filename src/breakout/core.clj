@@ -132,10 +132,14 @@
 (defn add-pts-hash [a b]
   (let [a-pt (pt-from-hash a)
         b-pt (pt-from-hash b)]
-    (add-pts a-pt b-pt)))
+    (pt-hash (add-pts a-pt b-pt))))
 
 (defn between? [a b c]
   (and (<= a b) (<= b c)))
+
+(defn apply-velocity-to-origin [obj]
+  (let [{velocity :velocity, origin :origin} obj]
+    (assoc obj :origin (add-pts-hash velocity origin))))
 
 ;; handles collisions of the paddle and ball
 ;; y = mx + b
@@ -191,24 +195,16 @@
 
 ;; Updates the ball velocity and location
 (defn update-ball [ball paddle]
-  (let [origin (:origin ball)
-        x (:x origin)
-        y (:y origin)
-        velocity (:velocity ball)
-        vx (:x velocity)
-        vy (:y velocity)
-        new-x (+ x vx)
-        new-y (+ y vy)]
-    (cond
-     ;; adjust the ball if it has collided with the world bounds
-     (world-bounds-collision? ball)
-     (world-bounds-adjust-ball ball)
+  (cond
+   ;; adjust the ball if it has collided with the world bounds
+   (world-bounds-collision? ball)
+   (world-bounds-adjust-ball ball)
 
-     (paddle-ball-collision? paddle ball)
-     (paddle-collision-adjust-ball paddle ball)
-     
-     :default
-     (assoc ball :origin {:x new-x :y new-y}))))
+   (paddle-ball-collision? paddle ball)
+   (paddle-collision-adjust-ball paddle ball)
+
+   :default
+   (apply-velocity-to-origin ball)))
 
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
