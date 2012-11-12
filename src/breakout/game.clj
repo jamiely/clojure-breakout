@@ -159,10 +159,16 @@
   (rect-collision-adjust-ball paddle ball))
 
 (defn update-blocks [blocks ball]
-  blocks)
+  (filter #(not (rect-ball-collision? % ball)) blocks))
+
+(defn blocks-ball-collision? [blocks ball]
+  (let [block-collided (first (filter #(rect-ball-collision? % ball) blocks))]
+    (if (nil? block-collided)
+      nil
+      (rect-collision-adjust-ball block-collided ball))))
 
 ;; Updates the ball velocity and location
-(defn update-ball [ball paddle]
+(defn update-ball [ball paddle blocks]
   (cond
    ;; adjust the ball if it has collided with the world bounds
    (world-bounds-collision? ball)
@@ -172,4 +178,7 @@
    (paddle-collision-adjust-ball paddle ball)
 
    :default
-   (apply-velocity-to-origin ball)))
+   (let [updated-ball (blocks-ball-collision? blocks ball)]
+     (if (nil? updated-ball)
+       (apply-velocity-to-origin ball)
+       updated-ball))))

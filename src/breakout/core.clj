@@ -113,7 +113,7 @@
                              old-time))
             updated-blocks (update-blocks blocks ball)
             updated-paddle (update-paddle paddle paddle-offset)
-            updated-ball (update-ball ball paddle)]
+            updated-ball (update-ball ball paddle blocks)]
 
         (draw canvas (draw-game updated-blocks updated-paddle updated-ball score))
 
