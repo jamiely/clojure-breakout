@@ -6,6 +6,9 @@
     (java.awt.event ActionListener KeyListener KeyEvent))
   (:gen-class :main true))
 
+;; world settings
+(def world-bounds (atom [600 400]))
+
 ;; The amount to move the paddle by
 (def paddle-offset (atom [0 0]))
 (def paddle-offset-multiplier (atom 40))
@@ -76,6 +79,15 @@
         new-y (+ y delta-y)]
     (assoc paddle :origin {:x new-x :y new-y})))
 
+(defn world-bounds-collision? [ball]
+  (let [{{x :x, y :y} :origin} ball
+        [world-width world-height] @world-bounds]
+    (or (> 0 x) (> 0 y) (< world-width x) (< world-height y))))
+
+(defn world-bounds-adjust-ball [ball]
+  (let [{{x :x, y :y} :origin} ball]
+    (assoc ball :origin {:x 300 :y 250})))
+
 ;; Updates the ball velocity and location
 (defn update-ball [ball]
   (let [origin (:origin ball)
@@ -86,7 +98,13 @@
         vy (:y velocity)
         new-x (+ x vx)
         new-y (+ y vy)]
-    (assoc ball :origin {:x new-x :y new-y})))
+    (cond
+     ;; adjust the ball if it has collided with the world bounds
+     (world-bounds-collision? ball)
+     (world-bounds-adjust-ball ball)
+     
+     :default
+     (assoc ball :origin {:x new-x :y new-y}))))
 
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
