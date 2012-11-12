@@ -135,14 +135,17 @@
 (defn paddle-ball-collision? [paddle ball]
   (let [{{paddle-y :y, paddle-x :x} :origin, {paddle-width :width, paddle-height :height} :size} paddle
         {{ball-x :x, ball-y :y} :origin, {ball-vx :x, ball-vy :y} :velocity} ball
+        ;; give some padding around the paddle so we dont have the ball seeming to pass
+        ;; through corners of the paddle
+        collision-give-x 2
         m (/ ball-vy ball-vx)
         b (- ball-y (* m ball-x))
         ball-next-y (+ ball-y ball-vy)
         ;; this is the x position of the ball if it was at the y position of the paddle
         ball-future-x (/ (- paddle-y b) m)
 
-        paddle-x-min paddle-x
-        paddle-x-max (+ paddle-x paddle-width)
+        paddle-x-min (- paddle-x collision-give-x)
+        paddle-x-max (+ paddle-x paddle-width collision-give-x)
         
         within-y? (and (<= ball-y paddle-y) (>= ball-next-y paddle-y))
         within-x? (and (>= ball-future-x paddle-x-min) (<= ball-future-x paddle-x-max))
