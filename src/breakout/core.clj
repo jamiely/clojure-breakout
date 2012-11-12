@@ -119,14 +119,44 @@
                   y))
         new-origin {:x new-x :y new-y}
         new-velocity {:x (* ball-speed new-vx-sign) :y (* ball-speed new-vy-sign)}]
-
-    (println (str "ball adjust\norigin=" new-origin " velocity=" new-velocity))
     
     (assoc (assoc ball :origin new-origin)
       :velocity new-velocity)))
 
+;; handles collisions of the paddle and ball
+;; y = mx + b
+;; 200 = -1 * 450 + b
+;; 195 = -1 * 455 + b
+;; b = 650
+;; y = m * x + b
+;; y - b = m * x
+;; (y - b) / m = x
+
+(defn paddle-ball-collision? [paddle ball]
+  (let [{{paddle-y :y, paddle-x :x} :origin, {paddle-width :width, paddle-height :height} :size} paddle
+        {{ball-x :x, ball-y :y} :origin, {ball-vx :x, ball-vy :y} :velocity} ball
+        m (/ ball-vy ball-vx)
+        b (- ball-y (* m ball-x))
+        ball-next-y (+ ball-y ball-vy)
+        ;; this is the x position of the ball if it was at the y position of the paddle
+        ball-future-x (/ (- paddle-y b) m)
+
+        paddle-x-min paddle-x
+        paddle-x-max (+ paddle-x paddle-width)
+        
+        within-y? (and (<= ball-y paddle-y) (>= ball-next-y paddle-y))
+        within-x? (and (>= ball-future-x paddle-x-min) (<= ball-future-x paddle-x-max))
+
+        collision? (and within-y? within-x?)]
+    
+    collision?))
+
+(defn paddle-collision-adjust-ball [paddle ball]
+  (println (str "The ball collided with the paddle:\npaddle=" paddle " ball=" ball))
+  ball)
+
 ;; Updates the ball velocity and location
-(defn update-ball [ball]
+(defn update-ball [ball paddle]
   (let [origin (:origin ball)
         x (:x origin)
         y (:y origin)
@@ -139,6 +169,9 @@
      ;; adjust the ball if it has collided with the world bounds
      (world-bounds-collision? ball)
      (world-bounds-adjust-ball ball)
+
+     (paddle-ball-collision? paddle ball)
+     (paddle-collision-adjust-ball paddle ball)
      
      :default
      (assoc ball :origin {:x new-x :y new-y}))))
@@ -174,9 +207,8 @@
                              current-time
                              old-time))
             updated-paddle (update-paddle paddle paddle-offset)
-            updated-ball (update-ball ball)]
+            updated-ball (update-ball ball paddle)]
 
-        (println (str "updated ball to " updated-ball))
         (draw canvas (draw-game blocks updated-paddle updated-ball score))
 
         :default
