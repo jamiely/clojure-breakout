@@ -22,7 +22,7 @@
 
 (defn default-blocks []
   (let [{width :width, height :height, :as size} @block-size
-        colors [:yellow :green :blue :magenta :red :orange]]
+        colors [:yellow :green :blue :magenta :red :orange :cyan :black]]
     (for [x (range 1 11)
           y (range 1 5)]
       {:origin {:x (* x width) :y (* y height)}
@@ -109,7 +109,7 @@
 ;; y - b = m * x
 ;; (y - b) / m = x
 
-(defn paddle-ball-collision? [paddle ball]
+(defn rect-ball-collision? [paddle ball]
   (let [{{paddle-y :y, paddle-x :x} :origin,
          {paddle-width :width, paddle-height :height} :size} paddle
         {{ball-x :x, ball-y :y} :origin,
@@ -136,13 +136,16 @@
         
         within-x?))))
 
-(defn paddle-collision-adjust-ball [paddle ball]
-  (println (str "The ball collided with the paddle:\npaddle=" paddle " ball=" ball))
+(defn paddle-ball-collision? [paddle ball]
+  (rect-ball-collision? paddle ball))
+
+(defn rect-collision-adjust-ball [rect ball]
+  (println (str "The ball collided with the rect:\nrect=" rect " ball=" ball))
   ;; when the ball collides, change the velocity to be upwards
   (let [{{x :x, y :y} :origin, {vx :x, vy :y} :velocity} ball
-        {{paddle-y :y} :origin} paddle
+        {{rect-y :y} :origin} rect
         anticipated-y (+ y vy)
-        delta-y (- anticipated-y paddle-y)
+        delta-y (- anticipated-y rect-y)
         new-vy (- vy)
         new-velocity {:x vx :y new-vy}
         new-y (+ y delta-y)
@@ -151,6 +154,9 @@
       (assoc ball :velocity new-velocity)
       :origin
       new-origin)))
+
+(defn paddle-collision-adjust-ball [paddle ball]
+  (rect-collision-adjust-ball paddle ball))
 
 (defn update-blocks [blocks ball]
   blocks)

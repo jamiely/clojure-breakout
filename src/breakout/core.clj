@@ -10,6 +10,7 @@
   (case color
     :green Color/GREEN
     :red Color/RED
+    :cyan Color/CYAN
     :magenta Color/MAGENTA
     :yellow Color/YELLOW
     :black Color/BLACK
