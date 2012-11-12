@@ -123,6 +123,20 @@
     (assoc (assoc ball :origin new-origin)
       :velocity new-velocity)))
 
+(defn pt-hash [[x y]] {:x x :y y})
+(defn pt-from-hash [{x :x y :y}] [x y])
+
+(defn add-pts [a b]
+  (map + a b))
+
+(defn add-pts-hash [a b]
+  (let [a-pt (pt-from-hash a)
+        b-pt (pt-from-hash b)]
+    (add-pts a-pt b-pt)))
+
+(defn between? [a b c]
+  (and (<= a b) (<= b c)))
+
 ;; handles collisions of the paddle and ball
 ;; y = mx + b
 ;; 200 = -1 * 450 + b
@@ -138,7 +152,8 @@
         {{ball-x :x, ball-y :y} :origin,
          {ball-vx :x, ball-vy :y} :velocity} ball
         ball-next-y (+ ball-y ball-vy)
-        within-y? (and (<= ball-y paddle-y) (>= ball-next-y paddle-y))]
+        within-y? (between? ball-y paddle-y ball-next-y)]
+    
     (if (not within-y?)
       ;; we can stop right here since the ball won't collide with something
       ;; not between its y delta
@@ -154,7 +169,7 @@
             paddle-x-min (- paddle-x collision-give-x)
             paddle-x-max (+ paddle-x paddle-width collision-give-x)
                        
-            within-x? (and (>= ball-future-x paddle-x-min) (<= ball-future-x paddle-x-max))]
+            within-x? (between? paddle-x-min ball-future-x paddle-x-max)]
         
         within-x?))))
 
