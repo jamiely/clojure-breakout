@@ -153,7 +153,19 @@
 
 (defn paddle-collision-adjust-ball [paddle ball]
   (println (str "The ball collided with the paddle:\npaddle=" paddle " ball=" ball))
-  ball)
+  ;; when the ball collides, change the velocity to be upwards
+  (let [{{x :x, y :y} :origin, {vx :x, vy :y} :velocity} ball
+        {{paddle-y :y} :origin} paddle
+        anticipated-y (+ y vy)
+        delta-y (- anticipated-y paddle-y)
+        new-vy (- vy)
+        new-velocity {:x vx :y new-vy}
+        new-y (+ y delta-y)
+        new-origin {:x x :y new-y}]
+    (assoc
+      (assoc ball :velocity new-velocity)
+      :origin
+      new-origin)))
 
 ;; Updates the ball velocity and location
 (defn update-ball [ball paddle]
