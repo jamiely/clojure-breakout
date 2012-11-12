@@ -94,7 +94,8 @@
     (pt-hash (add-pts a-pt b-pt))))
 
 (defn between? [a b c]
-  (and (<= a b) (<= b c)))
+  (or (and (<= a b) (<= b c))
+      (and (>= a b) (>= b c))))
 
 (defn apply-velocity-to-origin [obj]
   (let [{velocity :velocity, origin :origin} obj]
