@@ -72,10 +72,10 @@
 (defn draw-game [blocks paddle ball score]
   (fn [#^Graphics g]
     (doto g
-      (.setColor Color/RED)
+      (.setColor Color/WHITE)
       (.fillRect 0 0 600 400))
 
-    (map #(draw-block % g) blocks)
+    (doall (map #(draw-block % g) blocks))
     (draw-paddle paddle g)
     (draw-ball ball g)))
 
@@ -114,7 +114,7 @@
             updated-paddle (update-paddle paddle paddle-offset)
             updated-ball (update-ball ball paddle)]
 
-        (draw canvas (draw-game blocks updated-paddle updated-ball score))
+        (draw canvas (draw-game updated-blocks updated-paddle updated-ball score))
 
         :default
         (recur

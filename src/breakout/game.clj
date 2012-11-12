@@ -23,11 +23,11 @@
 (defn default-blocks []
   (let [{width :width, height :height, :as size} @block-size
         colors [:yellow :green :blue :magenta :red :orange]]
-    (for [x (range 1 5)
+    (for [x (range 1 11)
           y (range 1 5)]
-      {:orientation {:x (* x width) :y (* y height)}
+      {:origin {:x (* x width) :y (* y height)}
        :size size
-       :color (nth colors (mod x (count colors)))})))
+       :color (nth colors (mod (+ (* y 5) x) (count colors)))})))
 
 ;; Updates the location of the paddle
 (defn update-paddle [paddle offset]
