@@ -7,11 +7,14 @@
   (:gen-class :main true))
 
 ;; world settings
-(def world-bounds (atom [600 400]))
+(def world-bounds (atom [600 350]))
 
 ;; The amount to move the paddle by
 (def paddle-offset (atom [0 0]))
 (def paddle-offset-multiplier (atom 40))
+
+;; Ball settings
+(def ball-speed 5)
 
 (defn handle-input [#^KeyEvent event]
   (condp = (.getKeyCode event)
@@ -84,9 +87,43 @@
         [world-width world-height] @world-bounds]
     (or (> 0 x) (> 0 y) (< world-width x) (< world-height y))))
 
+;; Adjusts the ball when it goes out of bounds
 (defn world-bounds-adjust-ball [ball]
-  (let [{{x :x, y :y} :origin} ball]
-    (assoc ball :origin {:x 300 :y 250})))
+  (let [{{x :x, y :y} :origin {vx :x, vy :y} :velocity} ball
+        [world-width world-height] @world-bounds
+        over-x (> x world-width)
+        over-y (> y world-height)
+        under-x (< x 0)
+        under-y (< y 0)
+        vx-sign (/ vx (Math/abs vx))
+        vy-sign (/ vy (Math/abs vy))
+        new-vx-sign (if over-x
+                      -1
+                      (if under-x
+                        1
+                        vx-sign))
+        new-vy-sign (if over-y
+                      -1
+                      (if under-y
+                        1
+                        vy-sign))
+        new-x (if over-x
+                (- world-width (- x world-width))
+                (if under-x
+                  (Math/abs x)
+                  x))
+        new-y (if over-y
+                (- world-height (- y world-height))
+                (if under-y
+                  (Math/abs y)
+                  y))
+        new-origin {:x new-x :y new-y}
+        new-velocity {:x (* ball-speed new-vx-sign) :y (* ball-speed new-vy-sign)}]
+
+    (println (str "ball adjust\norigin=" new-origin " velocity=" new-velocity))
+    
+    (assoc (assoc ball :origin new-origin)
+      :velocity new-velocity)))
 
 ;; Updates the ball velocity and location
 (defn update-ball [ball]
@@ -109,7 +146,7 @@
 (defn -main [& args]
   (let [frame (JFrame. "Breakout")
         canvas (Canvas.)
-        ball {:origin {:x 300 :y 250} :radius 5 :velocity {:x 1 :y -1} }
+        ball {:origin {:x 300 :y 250} :radius 5 :velocity {:x ball-speed :y (- ball-speed)} }
         paddle {:origin {:x 300 :y 300} :size {:width 50 :height 10}}]
     
     (doto frame
@@ -139,6 +176,7 @@
             updated-paddle (update-paddle paddle paddle-offset)
             updated-ball (update-ball ball)]
 
+        (println (str "updated ball to " updated-ball))
         (draw canvas (draw-game blocks updated-paddle updated-ball score))
 
         :default
