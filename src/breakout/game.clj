@@ -13,7 +13,10 @@
 (def block-size (atom {:width 50 :height 20}))
 
 (defn default-ball []
-  {:origin {:x 300 :y 250} :radius 5 :velocity {:x ball-speed :y (- ball-speed)} })
+  {:origin {:x 300 :y 250}
+   :radius 5
+   :color :yellow
+   :velocity {:x ball-speed :y (- ball-speed)} })
 (defn default-paddle []
   {:origin {:x 300 :y 300} :size {:width 50 :height 10} :color :green})
 

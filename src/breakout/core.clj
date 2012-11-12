@@ -6,6 +6,16 @@
     (java.awt.event ActionListener KeyListener KeyEvent))
   (:gen-class :main true))
 
+(defn get-color [color]
+  (case color
+    :green Color/GREEN
+    :red Color/RED
+    :magenta Color/MAGENTA
+    :yellow Color/YELLOW
+    :black Color/BLACK
+    :orange Color/ORANGE
+    :blue Color/BLUE))
+
 (defn handle-input [#^KeyEvent event]
   (condp = (.getKeyCode event)
     KeyEvent/VK_LEFT (swap! paddle-offset #(map + [-1 0] %))
@@ -35,20 +45,11 @@
         diameter (* 2 radius)
         adjust-radius #(- % radius)
         x (adjust-radius orig-x)
-        y (adjust-radius orig-y)]
+        y (adjust-radius orig-y)
+        color (:color ball)]
     (doto g
-      (.setColor Color/YELLOW)
+      (.setColor (get-color color))
       (.fillOval x y diameter diameter))))
-
-(defn get-color [color]
-  (case color
-    :green Color/GREEN
-    :red Color/RED
-    :magenta Color/MAGENTA
-    :yellow Color/YELLOW
-    :black Color/BLACK
-    :orange Color/ORANGE
-    :blue Color/BLUE))
 
 (defn draw-rect [rect #^Graphics g]
   (let [origin (:origin rect)
