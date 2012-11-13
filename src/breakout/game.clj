@@ -166,8 +166,21 @@
 (defn update-blocks [blocks ball]
   (filter #(not (rect-ball-collision? % ball)) blocks))
 
+(defn magnitude-hash [a b]
+  (let [{ax :x, ay :y} a
+        {bx :x, by :y} b
+        dy (- ay by)
+        dx (- ax bx)]
+    (Math/abs (+ (* dy dy) (* dx dx)))))
+
+(defn closest [ball blocks]
+  "Returns the block that is closest to the ball"
+  (let [sort-fn #(magnitude-hash (:origin ball) (:origin %))]
+    (first (sort-by sort-fn blocks))))
+
 (defn blocks-ball-collision? [blocks ball]
-  (let [block-collided (first (filter #(rect-ball-collision? % ball) blocks))]
+  (let [blocks-hit (filter #(rect-ball-collision? % ball) blocks)
+        block-collided (closest ball blocks-hit)]
     (if (nil? block-collided)
       nil
       (rect-collision-adjust-ball block-collided ball))))
