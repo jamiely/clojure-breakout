@@ -127,7 +127,7 @@
       false
       
       ;; compute the x coordinate where the ball will cross the paddle's path
-      (let [collision-give-x 2 ; some padding so the ball doesn't blow through a paddle corner
+      (let [collision-give-x 0 ; some padding so the ball doesn't blow through a paddle corner
             m (/ ball-vy ball-vx)
             b (- ball-y (* m ball-x))
             ;; this is the x position of the ball if it was at the y position of the paddle
@@ -147,14 +147,21 @@
   (println (str "The ball collided with the rect:\nrect=" rect " ball=" ball))
   ;; when the ball collides, change the velocity to be upwards
   (let [{{x :x, y :y} :origin, {vx :x, vy :y} :velocity} ball
-        {{rect-y :y} :origin {rect-width :width} :size} rect
-        collide-y (if (>= vy 0) (+ rect-y rect-width) rect-y)
-        anticipated-y (+ y vy)
-        delta-y (- anticipated-y collide-y)
+        {{rect-y :y} :origin {rect-width :width rect-height :height} :size} rect
+        collide-y (if (<= vy 0) (+ rect-y rect-height) rect-y)
+        anticipated-y (+ y vy) ; where the ball would've been
+        delta-y (*(Math/abs (- anticipated-y collide-y)) (if (< vy 0) -1 1))
         new-vy (- vy)
         new-velocity {:x vx :y new-vy}
-        new-y (+ y delta-y)
-        new-origin {:x x :y new-y}]
+        ;; (y - b)/m = x
+        m (/ vy vx)
+        b (- y (* m x))
+        new-x (/ (- collide-y b) m)
+        new-y (+ collide-y delta-y 1)
+        new-origin {:x new-x :y new-y}]
+    (println (str "Ball " ball " \nblock " rect " \ncollide-y "
+                  collide-y " \nold-y " y " \nnew-y " new-y " \ndelta-y " delta-y
+                  " \nanticipated-y " anticipated-y))
     (assoc
       (assoc ball :velocity new-velocity)
       :origin
