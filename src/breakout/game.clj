@@ -115,8 +115,11 @@
          {paddle-width :width, paddle-height :height} :size} paddle
         {{ball-x :x, ball-y :y} :origin,
          {ball-vx :x, ball-vy :y} :velocity} ball
-        ball-next-y (+ ball-y ball-vy)
-        within-y? (between? ball-y paddle-y ball-next-y)]
+         ball-next-y (+ ball-y ball-vy)
+        paddle-y-max (+ paddle-y paddle-height)
+        within-y? (or
+                   (between? ball-y paddle-y ball-next-y)
+                   (between? ball-y paddle-y-max ball-next-y))]
     
     (if (not within-y?)
       ;; we can stop right here since the ball won't collide with something
@@ -144,9 +147,10 @@
   (println (str "The ball collided with the rect:\nrect=" rect " ball=" ball))
   ;; when the ball collides, change the velocity to be upwards
   (let [{{x :x, y :y} :origin, {vx :x, vy :y} :velocity} ball
-        {{rect-y :y} :origin} rect
+        {{rect-y :y} :origin {rect-width :width} :size} rect
+        collide-y (if (>= vy 0) (+ rect-y rect-width) rect-y)
         anticipated-y (+ y vy)
-        delta-y (- anticipated-y rect-y)
+        delta-y (- anticipated-y collide-y)
         new-vy (- vy)
         new-velocity {:x vx :y new-vy}
         new-y (+ y delta-y)
